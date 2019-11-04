@@ -1,4 +1,5 @@
 # hacker_news
+[Follow #BoringShow](https://www.youtube.com/watch?v=fahC3ky_zW0&list=PLOU2XLYxmsIK0r_D-zWcmJ1plIcDNnRkK&index=5)
 
 A new Flutter project.
 
