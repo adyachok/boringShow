@@ -1,11 +1,20 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:hacker_news/article.dart';
-import 'package:http/http.dart' as http;
+import 'package:hacker_news/hn_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  final hnBlock = HackerNewsBloc();
+  runApp(MyApp(bloc: hnBlock));
+}
 
 class MyApp extends StatelessWidget {
+  final HackerNewsBloc bloc;
+
+  MyApp({Key key, this.bloc}) : super(key: key);
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -14,13 +23,14 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Flutter Demo Home Page', bloc: this.bloc),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  final HackerNewsBloc bloc;
+  MyHomePage({Key key, this.title, this.bloc}) : super(key: key);
 
   final String title;
 
@@ -29,58 +39,20 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<int> _ids = [
-    21440526,
-    21440508,
-    21440582,
-    21437334,
-    21439192,
-    21440180,
-    21438418,
-    21440684,
-    21439340,
-    21439918,
-    21439089,
-    21439659,
-    21440578,
-    21437551,
-    21437409,
-    21436245,
-    21438588,
-    21437908,
-    21440327,
-    21432480
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body:  ListView(
-          children: _ids.map(
-            (i) => FutureBuilder<Article>(
-              future: _getArticle(i),
-              builder: (BuildContext context, AsyncSnapshot<Article> snapshot) {
-                if(snapshot.connectionState == ConnectionState.done) {
-                  return _buildItem(snapshot.data);
-                } else {
-                  return CircularProgressIndicator();
-                }
-            },
-            )
-          ).toList(),
+      body: StreamBuilder<UnmodifiableListView<Article>>(
+        stream: widget.bloc.articles,
+        initialData: UnmodifiableListView<Article>([]),
+        builder: (context, snapshot) => ListView(
+          children: snapshot.data.map(_buildItem).toList(),
         ),
+      )
       );
-  }
-
-  Future<Article> _getArticle(int id) async {
-    final storyUrl = 'https://hacker-news.firebaseio.com/v0/item/$id.json';
-    final storyRes = await http.get(storyUrl);
-    if (storyRes.statusCode == 200) {
-      return Article.fromJson(storyRes.body);
-    }
   }
 
   Widget _buildItem(Article article) {
@@ -88,7 +60,10 @@ class _MyHomePageState extends State<MyHomePage> {
       key: Key(article.title),
       padding: EdgeInsets.all(16.0),
       child: ExpansionTile(
-        title: Text(article.title, style: TextStyle(fontSize: 24.0),),
+        title: Text(
+          article.title,
+          style: TextStyle(fontSize: 24.0),
+        ),
         children: <Widget>[
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,

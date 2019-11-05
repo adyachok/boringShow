@@ -24,7 +24,7 @@ main() {
           final storyUrl = 'https://hacker-news.firebaseio.com/v0/item/${idList.first}.json';
           final storyRes = await http.get(storyUrl);
           if (storyRes.statusCode == 200) {
-            expect(Article.fromJson(storyRes.body).by, 'tambourine_man');
+            expect(Article.fromJson(storyRes.body), isNotNull);
           }
         }
       }
