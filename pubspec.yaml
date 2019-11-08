@@ -28,6 +28,7 @@ dependencies:
   built_value: '>=5.5.5 <7.0.0'
   http: any
   rxdart: 0.22.5
+  font_awesome_flutter: any
 
 dev_dependencies:
   flutter_test:
